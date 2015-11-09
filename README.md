@@ -2,7 +2,7 @@ Python Flink Examples
 =====================
 
 A collection of examples using Apache Flink's new python API.  To set up your local environment with 
-the latest Flink build, see the guide (HERE)[http://willmcginnis.com/2015/11/08/getting-started-with-python-and-apache-flink/].
+the latest Flink build, see the guide [HERE](http://willmcginnis.com/2015/11/08/getting-started-with-python-and-apache-flink/).
 
 The examples here use the v1.0 python API (they won't work with the current stable release pre-1.0), and
 are meant to serve as demonstrations of simple use cases.  Currently the python API supports a portion of the DataSet
