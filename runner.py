@@ -1,10 +1,9 @@
 import os
-import subprocess
 
 __author__ = 'willmcginnis'
 
 
-PYFLINK = '/Users/willmcginnis/Documents/Helton/projects/oss/flink/build-target/bin/pyflink3.sh'
+PYFLINK = 'pyflink3'
 project_directory = str(os.path.dirname(os.path.abspath(__file__)))
 
 
