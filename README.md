@@ -40,6 +40,11 @@ In this example, we have row-wise json in one file, with an attribute field that
 colors.  So we load both datasets in, convert the json data into a ordered and typed tuple, and join then two together
 to get a nice dataset of cars and their colors.
 
+Mean Values
+-----------
+
+Takes in a csv with two columns and finds the mean of each column, using a custom reducer function.  Afterwards, it 
+formats a string nicely with the output and dumps that onto disk.
 
 Features
 ========
@@ -52,10 +57,11 @@ Text data-source (read\_text)
  * trending hashtags
  * data enrichment
 
-CSV data-srouce (read\_csv)
+CSV data-source (read\_csv)
 ---------------------------
     
  * data enrichment
+ * mean values
 
 String data-source (from\_elements)
 -----------------------------------
@@ -67,6 +73,7 @@ Text output (write\_text)
 
  * word count
  * data enrichment
+ * mean values
 
 CSV output (write\_csv)
 -----------------------
@@ -83,6 +90,7 @@ Transformations: Map
  * word count
  * trending hashtags
  * data enrichment
+ * mean values
  
 Transformations: FlatMap
 ------------------------
@@ -102,7 +110,8 @@ Transformations: Filter
 Transformations: Reduce
 -----------------------
 
-
+ * mean values
+ 
 Transformations: ReduceGroup
 ----------------------------
 

@@ -34,12 +34,24 @@ def run_trending_hashtags():
     os.system(cmd)
 
 
+def run_mean_values():
+    cmd = '%s %s %s' % (
+        PYFLINK,
+        project_directory + os.sep + 'mean_values' + os.sep + 'mean_values.py',
+        ' - %s' % (project_directory, )
+    )
+    os.system(cmd)
+
+
 if __name__ == '__main__':
     print('RUNNING DATA ENRICHMENT EXAMPLE')
     run_data_enrichment()
-
+    
     print('RUNNING WORD COUNT EXAMPLE')
     run_word_count()
 
     print('RUNNING TRENDING HASHTAG EXAMPLE')
     run_trending_hashtags()
+
+    print('RUNNING MEAN VALUES EXAMPLE')
+    run_mean_values()
