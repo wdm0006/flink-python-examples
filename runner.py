@@ -3,7 +3,7 @@ import os
 __author__ = 'willmcginnis'
 
 
-PYFLINK = 'pyflink3'
+PYFLINK = 'pyflink3.sh'
 project_directory = str(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -43,10 +43,22 @@ def run_mean_values():
     os.system(cmd)
 
 
+def run_mandelbrot():
+    cmd = '%s %s %s' % (
+        PYFLINK,
+        project_directory + os.sep + 'mandelbrot' + os.sep + 'mandelbrot_set.py',
+        ' - %s' % (project_directory, )
+    )
+    os.system(cmd)
+
+
 if __name__ == '__main__':
+    print('RUNNING MANDELBROT SET EXAMPLE')
+    run_mandelbrot()
+
     print('RUNNING DATA ENRICHMENT EXAMPLE')
     run_data_enrichment()
-    
+
     print('RUNNING WORD COUNT EXAMPLE')
     run_word_count()
 

@@ -46,6 +46,11 @@ Mean Values
 Takes in a csv with two columns and finds the mean of each column, using a custom reducer function.  Afterwards, it 
 formats a string nicely with the output and dumps that onto disk.
 
+Mandelbrot Set
+--------------
+
+Creates a Mandelbrot set from a set of candidates. Inspired by [this post](http://1oclockbuzz.com/2015/11/24/pyspark-and-the-mandelbrot-set-overkill-indeed/)
+
 Features
 ========
 
@@ -62,6 +67,7 @@ CSV data-source (read\_csv)
     
  * data enrichment
  * mean values
+ * mandelbrot
 
 String data-source (from\_elements)
 -----------------------------------
@@ -74,6 +80,7 @@ Text output (write\_text)
  * word count
  * data enrichment
  * mean values
+ * mandelbrot
 
 CSV output (write\_csv)
 -----------------------
@@ -91,6 +98,7 @@ Transformations: Map
  * trending hashtags
  * data enrichment
  * mean values
+ * mandelbrot
  
 Transformations: FlatMap
 ------------------------
@@ -106,6 +114,7 @@ Transformations: Filter
 -----------------------
 
  * trending hashtags
+ * mandelbrot
 
 Transformations: Reduce
 -----------------------
