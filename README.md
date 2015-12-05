@@ -1,7 +1,7 @@
 Python Flink Examples
 =====================
 
-![Flink UI](https://github.com/wdm0006/flink-python-examples/tree/master/images/flink_ui.png)
+![Flink UI](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/flink_ui.png)
 
 A collection of examples using Apache Flink's new python API.  To set up your local environment with 
 the latest Flink build, see the guide:
@@ -28,7 +28,7 @@ Word Count
 An extremely simple analysis program uses a source from a simple string, counts the occurrences of each word
 and outputs to a file on disk (using the overwrite functionality).
 
-![Word Count Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/word_count_plan.png)
+![Word Count Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/word_count_plan.png)
 
 Trending Hashtags
 -----------------
@@ -37,7 +37,7 @@ A very similar example to word count, but includes a filter step to only include
 The input data in this case is read off of disk, and the output is written as a csv. The file is generated dynamically 
 at run time, so you can play with different volumes of tweets to get an idea of Flink's scalability and performance.
 
-![Trending Hashtags Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/trending_hashtags_plan.png)
+![Trending Hashtags Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/trending_hashtags_plan.png)
 
 Data Enrichment
 ---------------
@@ -46,7 +46,7 @@ In this example, we have row-wise json in one file, with an attribute field that
 colors.  So we load both datasets in, convert the json data into a ordered and typed tuple, and join then two together
 to get a nice dataset of cars and their colors.
 
-![Data Enrichment Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/data_enrichment_plan.png)
+![Data Enrichment Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/data_enrichment_plan.png)
 
 Mean Values
 -----------
@@ -54,14 +54,14 @@ Mean Values
 Takes in a csv with two columns and finds the mean of each column, using a custom reducer function.  Afterwards, it 
 formats a string nicely with the output and dumps that onto disk.
 
-![Mean Values Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/mean_values_plan.png)
+![Mean Values Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/mean_values_plan.png)
 
 Mandelbrot Set
 --------------
 
 Creates a Mandelbrot set from a set of candidates. Inspired by [this post](http://1oclockbuzz.com/2015/11/24/pyspark-and-the-mandelbrot-set-overkill-indeed/)
 
-![Mandelbrot Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/mandelbrot_plan.png)
+![Mandelbrot Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/mandelbrot_plan.png)
 
 Features
 ========
