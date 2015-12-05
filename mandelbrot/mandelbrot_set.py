@@ -55,7 +55,7 @@ if __name__ == "__main__":
         os.remove(output_file)
 
     with open(input_file.replace('file://', ''), 'w') as f:
-        for c in candidates(500):
+        for c in candidates(50):
             f.write('%f,%f\n' % (c[0], c[1]))
 
     # set up the environment with a text file source

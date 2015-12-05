@@ -1,22 +1,26 @@
 Python Flink Examples
 =====================
 
-A collection of examples using Apache Flink's new python API.  To set up your local environment with 
-the latest Flink build, see the guide [HERE](http://willmcginnis.com/2015/11/08/getting-started-with-python-and-apache-flink/).
+![Flink UI](https://github.com/wdm0006/flink-python-examples/tree/master/images/flink_ui.png)
 
-The examples here use the v1.0 python API (they won't work with the current stable release pre-1.0), and
-are meant to serve as demonstrations of simple use cases.  Currently the python API supports a portion of the DataSet
-API, which has a similar functionality to Spark, from the user's perspective.
+A collection of examples using Apache Flink's new python API.  To set up your local environment with 
+the latest Flink build, see the guide:
+ 
+ * [HERE](http://willmcginnis.com/2015/11/08/getting-started-with-python-and-apache-flink/).
+
+The examples here use the v0.10.0 python API, and are meant to serve as demonstrations of simple use cases.  Currently 
+the python API supports a portion of the DataSet API, which has a similar functionality to Spark, from the user's 
+perspective.
 
 To run the examples, I've included a runner script at the top level with methods for each example, simply
-add in the path to your pyflink script and you should be good to go (as long as you have a flask cluster running locally).
+add in the path to your pyflink script and you should be good to go (as long as you have a flink cluster running locally).
 
 The currently included examples are:
 
 Examples
 ========
 
-A listing of the examples included here.
+A listing of the examples and their resultant flink plans are included here.
 
 Word Count
 ----------
@@ -24,6 +28,7 @@ Word Count
 An extremely simple analysis program uses a source from a simple string, counts the occurrences of each word
 and outputs to a file on disk (using the overwrite functionality).
 
+![Word Count Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/word_count_plan.png)
 
 Trending Hashtags
 -----------------
@@ -32,6 +37,7 @@ A very similar example to word count, but includes a filter step to only include
 The input data in this case is read off of disk, and the output is written as a csv. The file is generated dynamically 
 at run time, so you can play with different volumes of tweets to get an idea of Flink's scalability and performance.
 
+![Trending Hashtags Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/trending_hashtags_plan.png)
 
 Data Enrichment
 ---------------
@@ -40,16 +46,22 @@ In this example, we have row-wise json in one file, with an attribute field that
 colors.  So we load both datasets in, convert the json data into a ordered and typed tuple, and join then two together
 to get a nice dataset of cars and their colors.
 
+![Data Enrichment Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/data_enrichment_plan.png)
+
 Mean Values
 -----------
 
 Takes in a csv with two columns and finds the mean of each column, using a custom reducer function.  Afterwards, it 
 formats a string nicely with the output and dumps that onto disk.
 
+![Mean Values Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/mean_values_plan.png)
+
 Mandelbrot Set
 --------------
 
 Creates a Mandelbrot set from a set of candidates. Inspired by [this post](http://1oclockbuzz.com/2015/11/24/pyspark-and-the-mandelbrot-set-overkill-indeed/)
+
+![Mandelbrot Plan](https://github.com/wdm0006/flink-python-examples/tree/master/images/mandelbrot_plan.png)
 
 Features
 ========
