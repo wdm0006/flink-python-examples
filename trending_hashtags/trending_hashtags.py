@@ -3,7 +3,7 @@ import random
 import sys
 
 from flink.plan.Environment import get_environment
-from flink.plan.Constants import INT, STRING, WriteMode
+from flink.plan.Constants import WriteMode
 from flink.functions.GroupReduceFunction import GroupReduceFunction
 
 __author__ = 'willmcginnis'
@@ -39,11 +39,11 @@ if __name__ == "__main__":
     data = env.read_text(input_file)
 
     data \
-        .flat_map(lambda x, c: [(1, word) for word in x.lower().split()], (INT, STRING)) \
+        .flat_map(lambda x, c: [(1, word) for word in x.lower().split()]) \
         .filter(lambda x: '#' in x[1]) \
         .group_by(1) \
-        .reduce_group(Adder(), (INT, STRING), combinable=True) \
-        .map(lambda y: (str(y[0]), y[1]), (STRING, STRING)) \
+        .reduce_group(Adder(), combinable=True) \
+        .map(lambda y: (str(y[0]), y[1])) \
         .write_csv(output_file, line_delimiter='\n', field_delimiter=',', write_mode=WriteMode.OVERWRITE)
 
     env.execute(local=True)

@@ -2,7 +2,7 @@ import os
 import json
 import sys
 from flink.plan.Environment import get_environment
-from flink.plan.Constants import INT, STRING, WriteMode
+from flink.plan.Constants import STRING, WriteMode
 from flink.functions.GroupReduceFunction import GroupReduceFunction
 
 __author__ = 'willmcginnis'
@@ -37,9 +37,9 @@ if __name__ == "__main__":
     dimensional_data = env.read_csv(dim_file, types=[STRING, STRING])
 
     input_data \
-        .map(lambda x: json_to_tuple(json.loads(x), ['car', 'attr']), (STRING, STRING)) \
+        .map(lambda x: json_to_tuple(json.loads(x), ['car', 'attr'])) \
         .join(dimensional_data).where(1).equal_to(0) \
-        .map(lambda x: 'This %s is %s' % (x[0][0], x[1][1]), STRING) \
+        .map(lambda x: 'This %s is %s' % (x[0][0], x[1][1])) \
         .write_text(output_file, write_mode=WriteMode.OVERWRITE)
 
     env.execute(local=True)

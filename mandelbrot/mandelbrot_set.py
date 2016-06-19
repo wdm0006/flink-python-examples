@@ -3,7 +3,7 @@ import json
 import sys
 import numpy as np
 from flink.plan.Environment import get_environment
-from flink.plan.Constants import INT, STRING, FLOAT, WriteMode
+from flink.plan.Constants import FLOAT, WriteMode
 from flink.functions.GroupReduceFunction import GroupReduceFunction
 
 __author__ = 'willmcginnis/1oclockbuzz'
@@ -63,9 +63,9 @@ if __name__ == "__main__":
     data = env.read_csv(input_file, types=[FLOAT, FLOAT])
 
     data \
-        .map(lambda x: check_c(x), (FLOAT, FLOAT, FLOAT)) \
+        .map(lambda x: check_c(x)) \
         .filter(lambda x: True if x[0] != -999 else False) \
-        .map(lambda x: '%s + %sj, %s' % (x[0], x[1], x[2]), STRING) \
+        .map(lambda x: '%s + %sj, %s' % (x[0], x[1], x[2])) \
         .write_text(output_file, write_mode=WriteMode.OVERWRITE)
 
     # execute the plan locally.
