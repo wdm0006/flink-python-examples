@@ -3,7 +3,7 @@ import random
 import sys
 
 from flink.plan.Environment import get_environment
-from flink.plan.Constants import INT, STRING, WriteMode, FLOAT
+from flink.plan.Constants import WriteMode, FLOAT
 from flink.functions.ReduceFunction import ReduceFunction
 
 __author__ = 'willmcginnis'
@@ -39,11 +39,11 @@ if __name__ == "__main__":
 
     # add a 1 in the 0 index for counting the number of samples, then reduce to get all sums and divide for means
     data \
-        .map(lambda x: (1, x[0], x[1]), (INT, FLOAT, FLOAT)) \
+        .map(lambda x: (1, x[0], x[1])) \
         .group_by(0) \
         .reduce(MeanReducer()) \
-        .map(lambda x: (x[1]/x[0], x[2]/x[0]), (FLOAT, FLOAT)) \
-        .map(lambda x: 'mean of col 0: %f\nmean of col 1: %f' % (x[0], x[1]), STRING) \
+        .map(lambda x: (x[1]/x[0], x[2]/x[0])) \
+        .map(lambda x: 'mean of col 0: %f\nmean of col 1: %f' % (x[0], x[1])) \
         .write_text(output_file, write_mode=WriteMode.OVERWRITE)
 
     env.execute(local=True)

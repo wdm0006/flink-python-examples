@@ -1,7 +1,7 @@
 import sys
 
 from flink.plan.Environment import get_environment
-from flink.plan.Constants import INT, STRING, WriteMode
+from flink.plan.Constants import WriteMode
 from flink.functions.GroupReduceFunction import GroupReduceFunction
 
 
@@ -25,10 +25,10 @@ if __name__ == "__main__":
     # we first map each word into a (1, word) tuple, then flat map across that, and group by the key, and sum
     # aggregate on it to get (count, word) tuples, then pretty print that out to a file.
     data \
-        .flat_map(lambda x, c: [(1, word) for word in x.lower().split()], (INT, STRING)) \
+        .flat_map(lambda x, c: [(1, word) for word in x.lower().split()]) \
         .group_by(1) \
-        .reduce_group(Adder(), (INT, STRING), combinable=True) \
-        .map(lambda y: 'Count: %s Word: %s' % (y[0], y[1]), STRING) \
+        .reduce_group(Adder(), combinable=True) \
+        .map(lambda y: 'Count: %s Word: %s' % (y[0], y[1])) \
         .write_text(output_file, write_mode=WriteMode.OVERWRITE)
 
     # execute the plan locally.
