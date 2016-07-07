@@ -1,9 +1,9 @@
-Python Flink Examples
+Python Flink™ Examples
 =====================
 
 ![Flink UI](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/flink_ui.png)
 
-A collection of examples using Apache Flink's new python API.  To set up your local environment with 
+A collection of examples using Apache Flink™'s new python API.  To set up your local environment with 
 the latest Flink build, see the guide:
  
  * [HERE](http://willmcginnis.com/2015/11/08/getting-started-with-python-and-apache-flink/).
@@ -173,3 +173,8 @@ in the word count example as:
     
 But this doesn't seem to work, because some part of how pyflink is executing the python code moves it, so the abspath
 term evaluates to some temp directory. 
+
+
+Disclaimer
+========
+Apache®, Apache Flink™, Flink™, and the Apache feather logo are trademarks of [The Apache Software Foundation](http://apache.org).
