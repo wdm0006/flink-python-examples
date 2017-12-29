@@ -52,12 +52,7 @@ def run_mandelbrot():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and \
-       type(sys.argv[1]) is str and \
-       os.path.exists(sys.argv[1]):
-        PYFLINK = sys.argv[1]
-    else:
-        PYFLINK = 'pyflink3.sh'
+    PYFLINK = sys.argv[1]
 
     print('RUNNING MANDELBROT SET EXAMPLE')
     run_mandelbrot()

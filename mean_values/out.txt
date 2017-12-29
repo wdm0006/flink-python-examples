@@ -1,2 +1,2 @@
-mean of col 0: 0.496384
-mean of col 1: 0.502064
+mean of col 0: 0.494770
+mean of col 1: 0.488372
