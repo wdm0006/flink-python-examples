@@ -13,7 +13,7 @@ class Adder(GroupReduceFunction):
 
 if __name__ == "__main__":
     # get the base path out of the runtime params
-    base_path = sys.argv[1]
+    base_path = sys.argv[0]
 
     # we have to hard code in the path to the output because of gotcha detailed in readme
     output_file = 'file://' + base_path + '/word_count/out.txt'
