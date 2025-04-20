@@ -1,0 +1,38 @@
+services:
+  jobmanager:
+    # Build from Dockerfile in the current directory
+    build: .
+    ports:
+      - "8081:8081" # Flink UI
+    command: jobmanager
+    environment:
+      # Set Flink properties (removed python.executable)
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        parallelism.default: 1
+    volumes:
+      - .:/opt/flink/usrlib # Mount project directory
+    networks:
+      - flink-network
+
+  taskmanager:
+    # Build from Dockerfile in the current directory
+    build: .
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    environment:
+      # Set Flink properties (removed python.executable)
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+    volumes:
+      - .:/opt/flink/usrlib # Mount project directory
+    networks:
+      - flink-network
+
+networks:
+  flink-network:
+    driver: bridge 

@@ -1,73 +1,126 @@
 import os
-import json
 import sys
 import numpy as np
-from flink.plan.Environment import get_environment
-from flink.plan.Constants import FLOAT, WriteMode
-from flink.functions.GroupReduceFunction import GroupReduceFunction
+from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings
+from pyflink.table.expressions import col
+from pyflink.table.udf import udf
 
 __author__ = 'willmcginnis/1oclockbuzz'
 
+def check_c(real_part, imag_part, rel_tol=1e-6, max_zmag=1e6, max_iter=500):
+    """Checks whether or not c is in the Mandelbrot Set.
 
-def check_c(c, rel_tol=1e-6, max_zmag=1e6):
-    """Checks whether or not c is in the Mandelbrot Set
-
-    from http://1oclockbuzz.com/2015/11/24/pyspark-and-the-mandelbrot-set-overkill-indeed/
+    Accepts real and imaginary parts as separate floats.
+    Returns a tuple (real, imag, magnitude) or None if not in the set or calculation fails.
     """
+    try:
+        c_complex = complex(float(real_part), float(imag_part))
+        z = np.zeros(max_iter, dtype=complex)
+        zmag = np.zeros(max_iter)
 
-    import numpy as np
+        for i in range(1, max_iter):
+            z[i] = z[i-1]**2 + c_complex
+            zmag[i] = np.abs(z[i])
 
-    c_complex = (float(c[0]) + float(c[1])*1j)
+            if np.isnan(z[i]) or zmag[i] > max_zmag:
+                return None # Not in the set or diverged too quickly
 
-    z = np.zeros(500, dtype=complex)
-    zmag = np.zeros(500)
+            # Check for convergence (close enough to previous magnitude)
+            if i > 1 and zmag[i] > 1e-12: # Avoid division by zero or near-zero
+                rel_diff = np.abs((zmag[i] - zmag[i-1]) / zmag[i])
+                if rel_diff < rel_tol:
+                    return (real_part, imag_part, float(zmag[i]))
+            elif np.abs(zmag[i] - zmag[i-1]) < rel_tol * 1e-9: # Handle convergence near zero
+                 return (real_part, imag_part, float(zmag[i]))
 
-    for i in range(1, 500):
-        z[i] = z[i-1]**2 + c_complex
-        zmag[i] = np.abs(z[i])
-        if np.isnan(z[i]) or zmag[i] > max_zmag:
-            return (-999, -999, -999)
+        # If loop finishes without diverging or converging (unlikely with high max_iter)
+        return (real_part, imag_part, float(zmag[max_iter-1]))
 
-        rel_diff = np.abs((zmag[i] - zmag[i-1])/zmag[i])
-        if rel_diff < rel_tol:
-            return (c[0], c[1], zmag[i])
-
-    return (c[0], c[1], zmag[i])
-
+    except Exception as e:
+        # Log error or handle it appropriately
+        print(f"Error in check_c for ({real_part}, {imag_part}): {e}", file=sys.stderr)
+        return None
 
 def candidates(n):
-    """Generates candidate complex numbers for Mandelbrot Set"""
+    """Generates candidate complex numbers for Mandelbrot Set."""
+    # Using numpy for linspace
     for r_part in np.linspace(-2, 2, n):
         for c_part in np.linspace(-1, 1, n):
-            yield (r_part, c_part)
+            yield (float(r_part), float(c_part))
 
+# Helper function to generate input data
+def generate_input_file(file_path, n=50):
+    """Generates a sample CSV input file with candidate complex numbers."""
+    print(f"Generating sample input file: {file_path} with {n}x{n} candidates")
+    try:
+        # Ensure directory exists before writing
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'w') as f:
+            for c in candidates(n):
+                f.write('%f,%f\n' % (c[0], c[1]))
+        print("Sample input file generated.")
+    except IOError as e:
+        print(f"Error generating input file: {e}")
+        raise
 
+# Define the main execution logic
 if __name__ == "__main__":
-    # get the base path out of the runtime params
-    base_path = sys.argv[1]
+    """Modern PyFlink Mandelbrot Set Example using Table API."""
 
-    # we have to hard code in the path to the output because of gotcha detailed in readme
-    output_file = 'file://' + base_path + '/mandelbrot/out.txt'
-    input_file = 'file://' + base_path + '/mandelbrot/in.txt'
+    # Base path inside the container
+    base_path = '/opt/flink/usrlib'
 
-    # remove the output file, if there is one there already
-    if os.path.isfile(output_file):
-        os.remove(output_file)
+    # Construct paths relative to the container mount point
+    input_dir = os.path.join(base_path, 'mandelbrot')
+    input_file_abs = os.path.join(input_dir, 'in.txt')
 
-    with open(input_file.replace('file://', ''), 'w') as f:
-        for c in candidates(50):
-            f.write('%f,%f\n' % (c[0], c[1]))
+    # Generate the input file (adjust n for desired resolution/speed)
+    # This happens when the script is executed by Flink
+    generate_input_file(input_file_abs, n=30) # Reduced n for faster testing
 
-    # set up the environment with a text file source
-    env = get_environment()
-    data = env.read_csv(input_file, types=[FLOAT, FLOAT])
+    # 1. Create Environment
+    env = StreamExecutionEnvironment.get_execution_environment()
+    t_env = StreamTableEnvironment.create(env)
 
-    data \
-        .map(lambda x: check_c(x)) \
-        .filter(lambda x: True if x[0] != -999 else False) \
-        .map(lambda x: '%s + %sj, %s' % (x[0], x[1], x[2])) \
-        .write_text(output_file, write_mode=WriteMode.OVERWRITE)
+    # 2. Create Source Table using DDL
+    # Path is now absolute inside the container
+    t_env.execute_sql(f"""
+        CREATE TABLE mandelbrot_source (
+            real_part DOUBLE,
+            imag_part DOUBLE
+        ) WITH (
+            'connector' = 'filesystem',
+            'path' = '{input_file_abs}',
+            'format' = 'csv'
+        )
+    """)
 
-    # execute the plan locally.
-    env.execute(local=True)
+    # 3. Define UDF wrapping the check_c logic
+    # Returns ROW<real DOUBLE, imag DOUBLE, magnitude DOUBLE>
+    @udf(result_type=DataTypes.ROW([
+        DataTypes.FIELD("real", DataTypes.DOUBLE()),
+        DataTypes.FIELD("imag", DataTypes.DOUBLE()),
+        DataTypes.FIELD("mag", DataTypes.DOUBLE())
+    ]))
+    def check_mandelbrot_udf(real_part, imag_part):
+        return check_c(real_part, imag_part)
+
+    # 4. Define the Execution Logic (Apply UDF, Filter)
+    source_table = t_env.from_path('mandelbrot_source')
+
+    result_table = source_table \
+        .select(check_mandelbrot_udf(col('real_part'), col('imag_part')).alias('m_result')) \
+        .filter(col('m_result').is_not_null) # Filter out points not in the set (where UDF returned None)
+        # Optional: select individual fields if needed
+        # .select(col('m_result').get('real'), col('m_result').get('imag'), col('m_result').get('mag'))
+
+    # 5. Emit Results (Print to Console)
+    print("\nMandelbrot Set Results (Real, Imaginary, Magnitude):")
+    # Increase default max content width for printing rows
+    t_env.get_config().set("sql.result.max-content-width", "200")
+    result_table.execute().print()
+    print("Mandelbrot Job Submitted (check logs/UI for results).")
+
+# Removed main() function
 

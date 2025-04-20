@@ -1,21 +1,84 @@
 import os
-import sys
-from flink.plan.Environment import get_environment
-from flink.plan.Constants import INT, STRING, WriteMode
-from flink.functions.GroupReduceFunction import GroupReduceFunction
+from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings
+from pyflink.table.expressions import col
 
+# Define the main execution logic when the script is run directly
 if __name__ == "__main__":
-    # get the base path out of the runtime params
-    args = sys.argv[1:]
+    """Template for a PyFlink Table API batch job."""
 
-    # set up the environment with a source (in this case from a text file
-    env = get_environment()
-    data = env.read_text('foo')
+    # 1. Create Execution Environment
+    env = StreamExecutionEnvironment.get_execution_environment()
+    # Optionally configure the environment (e.g., parallelism)
+    # env.set_parallelism(1)
+    t_env = StreamTableEnvironment.create(env)
 
-    # build the job flow
-    data \
-        .map(lambda x: x, STRING) \
-        .write_csv('bar', line_delimiter='\n', field_delimiter=',')
+    print("Starting PyFlink Table API template job...")
 
-    # execute
-    env.execute(local=True)
+    # === Configuration (Example) ===
+    # Base path inside the container
+    base_path = '/opt/flink/usrlib'
+    # Example paths inside the container
+    # input_path = os.path.join(base_path, 'template_example', 'input.csv')
+    # output_path = os.path.join(base_path, 'template_example', 'output.txt')
+
+    # === Source ===
+    # Replace with your actual source. Examples:
+    # From elements:
+    source_data = [("hello", 1), ("world", 2), ("flink", 3)]
+    source_table = t_env.from_elements(
+        source_data,
+        schema=DataTypes.ROW([
+            DataTypes.FIELD("word", DataTypes.STRING()),
+            DataTypes.FIELD("count", DataTypes.INT())
+        ])
+    )
+
+    # From CSV:
+    # t_env.execute_sql(f"""
+    #     CREATE TABLE my_source (
+    #         field1 STRING,
+    #         field2 INT
+    #     ) WITH (
+    #         'connector' = 'filesystem',
+    #         'path' = '{input_path}', # Use container path variable
+    #         'format' = 'csv'
+    #     )
+    # """)
+    # source_table = t_env.from_path('my_source')
+
+    # === Transformations ===
+    # Replace with your desired data processing logic
+    # Example: Filter data
+    result_table = source_table.filter(col('count') > 1)
+
+    # Example: Select and rename columns
+    # result_table = source_table.select(col('word').alias('item'), col('count').alias('value'))
+
+    # Example: SQL Query
+    # result_table = t_env.sql_query(f"SELECT UPPER(word), count FROM {source_table} WHERE count > 1")
+
+
+    # === Sink ===
+    # Replace with your actual sink. Examples:
+    # Print to console:
+    print("\nTemplate Job Results:")
+    result_table.execute().print()
+    print("Template Job Submitted (check logs/UI for results).")
+
+    # Write to CSV:
+    # t_env.execute_sql(f"""
+    #     CREATE TABLE my_sink (
+    #         word STRING,
+    #         count INT
+    #     ) WITH (
+    #         'connector' = 'filesystem',
+    #         'path' = '{output_path}', # Use container path variable
+    #         'format' = 'csv'
+    #     )
+    # """)
+    # result_table.execute_insert('my_sink').wait() # Use wait() for batch jobs to ensure completion
+
+    print("\nPyFlink Table API template job finished submitting.")
+
+# Note: Removed main() function definition.

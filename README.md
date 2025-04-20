@@ -1,180 +1,112 @@
-Python Flink™ Examples
-=====================
+# PyFlink Examples (Updated)
 
-![Flink UI](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/flink_ui.png)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-A collection of examples using Apache Flink™'s new python API.  To set up your local environment with 
-the latest Flink build, see the guide:
- 
- * [HERE](http://willmcginnis.com/2015/11/08/getting-started-with-python-and-apache-flink/).
+A collection of examples demonstrating Apache Flink™'s Python API (PyFlink), updated to use modern APIs and run within a self-contained Docker environment.
 
-The examples here use the v0.10.0 python API, and are meant to serve as demonstrations of simple use cases.  Currently 
-the python API supports a portion of the DataSet API, which has a similar functionality to Spark, from the user's 
-perspective.
+These examples primarily use the PyFlink **Table API**, showcasing common patterns for batch processing.
 
-To run the examples, I've included a runner script at the top level with methods for each example, simply
-add in the path to your pyflink script and you should be good to go (as long as you have a flink cluster running locally).
+## Overview of the Docker Approach
 
-The currently included examples are:
+Running PyFlink applications typically requires a Java runtime environment, Python, and specific dependencies (like PyFlink itself) to be available to the Flink cluster nodes. To simplify setup and ensure consistency, this project uses **Docker Compose** to manage a local Flink cluster built from a custom **Dockerfile**.
 
-Examples
-========
+Here's the workflow:
+1.  You use `docker compose up --build` (implicitly handled by `make start-flink` if the image doesn't exist) to build a custom Flink Docker image based on the included `Dockerfile`. This image installs Python 3 and the necessary Python packages (`apache-flink`, `numpy`) on top of the official Flink image.
+2.  Docker Compose then starts Flink JobManager and TaskManager containers using this custom image.
+3.  The project directory is **mounted** as a volume inside these containers, making your Python scripts accessible to Flink.
+4.  You use `make run` which executes `flink run` commands *inside* the JobManager container.
+5.  The `flink run` command submits your Python scripts (`.py` files) to the Flink cluster.
+6.  Flink executes the Python scripts using the Python 3 environment built into the Docker image, potentially distributing tasks to the TaskManager(s).
+7.  Any output printed by the Python scripts (like results) appears in the standard output logs of the **Flink TaskManager** containers.
 
-A listing of the examples and their resultant flink plans are included here.
+This approach ensures the correct Java, Python, and Python dependencies are present and avoids configuration issues related to finding the Python executable.
 
-Word Count
-----------
+## Requirements
 
-An extremely simple analysis program uses a source from a simple string, counts the occurrences of each word
-and outputs to a file on disk (using the overwrite functionality).
+*   [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+*   Python 3.6+ (Optional, for local utilities if desired)
+*   [uv](https://github.com/astral-sh/uv) (Optional, for local setup)
+*   [Homebrew](https://brew.sh/) (Optional, on macOS, used by the Makefile to install `uv` if not found)
 
-![Word Count Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/word_count_plan.png)
+## Dockerfile and `docker-compose.yml` Setup
 
-Trending Hashtags
------------------
+*   **`Dockerfile`:**
+    *   Starts from the official `flink:1.19.0-scala_2.12-java11` image.
+    *   Installs `python3` and `python3-pip` using `apt-get`.
+    *   Copies `requirements.txt`.
+    *   Installs Python dependencies (`apache-flink`, `numpy`) using `pip3`.
+*   **`docker-compose.yml`:**
+    *   Defines `jobmanager` and `taskmanager` services.
+    *   Uses `build: .` to instruct Docker Compose to build the image using the `Dockerfile` in the current directory.
+    *   Exposes port `8081` for the Flink Web UI.
+    *   Sets basic Flink configuration.
+    *   Mounts the current project directory (`.`) to `/opt/flink/usrlib` inside the containers.
+    *   Connects the services via a `flink-network`.
 
-A very similar example to word count, but includes a filter step to only include hashtags, and different source/sinks.
-The input data in this case is read off of disk, and the output is written as a csv. The file is generated dynamically 
-at run time, so you can play with different volumes of tweets to get an idea of Flink's scalability and performance.
+## Setup
 
-![Trending Hashtags Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/trending_hashtags_plan.png)
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/wdm0006/flink-python-examples.git
+    cd flink-python-examples
+    ```
 
-Data Enrichment
----------------
+2.  **(Optional) Set up local Python environment:**
+    This step is optional for just running the examples via Docker.
+    ```bash
+    make setup
+    ```
+    This uses `uv` to create a `.venv` and install Python dependencies locally.
 
-In this example, we have row-wise json in one file, with an attribute field that refers to a csv dimension table with
-colors.  So we load both datasets in, convert the json data into a ordered and typed tuple, and join then two together
-to get a nice dataset of cars and their colors.
+3.  **Build the Image and Start the Flink Cluster:**
+    The first time you run this, Docker Compose will build the image defined in the `Dockerfile`. Subsequent runs will reuse the existing image unless the `Dockerfile` or its context changes.
+    ```bash
+    make start-flink
+    # Or directly: docker compose up -d --build
+    ```
+    You can access the Flink Web UI at [http://localhost:8081](http://localhost:8081).
 
-![Data Enrichment Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/data_enrichment_plan.png)
+## Running the Examples
 
-Mean Values
------------
+With the Flink cluster running, submit the example jobs:
 
-Takes in a csv with two columns and finds the mean of each column, using a custom reducer function.  Afterwards, it 
-formats a string nicely with the output and dumps that onto disk.
+```bash
+make run
+```
 
-![Mean Values Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/mean_values_plan.png)
+This command uses `docker compose exec jobmanager flink run -py <script_path_in_container>` for each example script. Flink uses the Python 3 environment built into the Docker image.
 
-Mandelbrot Set
---------------
+**Output:** Check the **Flink Web UI** ([http://localhost:8081](http://localhost:8081)) for running/completed jobs. View the `stdout` logs of the TaskManager(s) to see printed results.
 
-Creates a Mandelbrot set from a set of candidates. Inspired by [this post](http://1oclockbuzz.com/2015/11/24/pyspark-and-the-mandelbrot-set-overkill-indeed/)
+To submit a single example (e.g., word count):
+```bash
+make submit_word_count
+```
 
-![Mandelbrot Plan](https://raw.githubusercontent.com/wdm0006/flink-python-examples/master/images/mandelbrot_plan.png)
+## Stopping the Cluster
 
-Features
-========
+```bash
+make stop-flink
+# Or directly: docker compose down
+```
 
-A quick listing of high level features, and the examples that include them
+## Examples Included
 
-Text data-source (read\_text)
-----------------------------
+*   **Word Count:** Counts word occurrences in a predefined string.
+*   **Trending Hashtags:** Generates sample "tweets", extracts hashtags, and counts their frequency.
+*   **Data Enrichment:** Reads sample JSON data and a CSV dimension table, joins them based on an attribute, and outputs the enriched data.
+*   **Mean Values:** Generates sample floating-point data and calculates the mean of each column.
+*   **Mandelbrot Set:** Generates candidate complex numbers and identifies points within the Mandelbrot set.
+*   **Template Example:** A basic skeleton (`template_example/application.py`) demonstrating the structure for a new PyFlink Table API job.
 
- * trending hashtags
- * data enrichment
+## Cleaning Up
 
-CSV data-source (read\_csv)
----------------------------
-    
- * data enrichment
- * mean values
- * mandelbrot
+To remove the local virtual environment (if created) and stop/remove the Flink cluster containers:
 
-String data-source (from\_elements)
------------------------------------
+```bash
+make clean
+```
 
- * word count
+## Disclaimer
 
-Text output (write\_text)
--------------------------
-
- * word count
- * data enrichment
- * mean values
- * mandelbrot
-
-CSV output (write\_csv)
------------------------
-
- * trending hashtags
- 
-Log to stdout output (output)
------------------------------
-
-
-Transformations: Map
---------------------
-
- * word count
- * trending hashtags
- * data enrichment
- * mean values
- * mandelbrot
- 
-Transformations: FlatMap
-------------------------
-
- * word count
- * trending hashtags
-
-Transformations: MapPartition
------------------------------
-
-
-Transformations: Filter
------------------------
-
- * trending hashtags
- * mandelbrot
-
-Transformations: Reduce
------------------------
-
- * mean values
- 
-Transformations: ReduceGroup
-----------------------------
-
- * word count
- * trending hashtags
-
-Transformations: Join
---------------------
-
- * data enrichment
- 
-Transformations: CoGroup
-------------------------
-
-
-Transformations: Cross
-----------------------
-
-
-Transformations: Union
-----------------------
-
-
-Gotchas We've Found
-===================
-
-As we go through the process of making these examples in an extremely young library, we run across quirks, that we will
-mention here, and if appropriate report as bugs (we will take these down once they are fixed if they are bugs).
-
-Using os.path to set file paths dynamically
--------------------------------------------
-
-There is a tendency to want to write code without hard-coded paths.  So we may include the path to the output file
-in the word count example as:
-
-    import os
-    output_path = os.path.dirname(os.path.abspath(__file__)) + os.sep + 'output_file.txt'
-    
-But this doesn't seem to work, because some part of how pyflink is executing the python code moves it, so the abspath
-term evaluates to some temp directory. 
-
-
-Disclaimer
-========
 Apache®, Apache Flink™, Flink™, and the Apache feather logo are trademarks of [The Apache Software Foundation](http://apache.org).
