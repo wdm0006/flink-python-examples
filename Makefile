@@ -35,7 +35,7 @@ setup: check_uv requirements.txt
 # Start Flink cluster using Docker Compose
 start-flink:
 	@echo "Starting Flink cluster via Docker Compose..."
-	@docker compose up -d --verbose --build --no-cache
+	@docker compose up -d --build
 	@echo "Flink cluster started. UI should be available at http://localhost:8081"
 
 # Stop Flink cluster
