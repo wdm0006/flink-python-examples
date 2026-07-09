@@ -1,2 +1,2 @@
-apache-flink
-numpy 
+apache-flink==1.19.0
+numpy==1.22.4
