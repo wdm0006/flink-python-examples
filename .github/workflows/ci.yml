@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_FILE: docker-compose.yml:/tmp/docker-compose.ci.yml
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/setup-compose-action@v2
+
+      - uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Configure Docker layer cache
+        run: |
+          cat > /tmp/docker-compose.ci.yml <<'EOF'
+          services:
+            jobmanager:
+              build:
+                cache_from:
+                  - type=gha,scope=flink-image
+                cache_to:
+                  - type=gha,mode=max,scope=flink-image
+            taskmanager:
+              build:
+                cache_from:
+                  - type=gha,scope=flink-image
+                cache_to:
+                  - type=gha,mode=max,scope=flink-image
+          EOF
+
+      - name: Build image and start Flink
+        run: make start-flink
+
+      - name: Wait for Flink
+        run: |
+          for _ in {1..60}; do
+            if curl --fail --silent http://localhost:8081/overview \
+              | jq --exit-status '.taskmanagers >= 1' > /dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose ps
+          docker compose logs
+          exit 1
+
+      # Add word_count and trending_hashtags after their known runtime failures are fixed.
+      - name: Run mean values end to end
+        shell: bash
+        run: |
+          set -o pipefail
+          make submit_mean_values | tee /tmp/mean-values.log
+          grep -E '^\|[[:space:]]*\+I[[:space:]]*\|[[:space:]]*0\.[0-9]+[[:space:]]*\|[[:space:]]*0\.[0-9]+[[:space:]]*\|$' /tmp/mean-values.log
+
+      - name: Stop Flink
+        if: always()
+        run: make stop-flink
