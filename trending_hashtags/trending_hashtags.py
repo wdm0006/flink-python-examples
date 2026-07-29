@@ -45,7 +45,7 @@ if __name__ == "__main__":
     t_env = StreamTableEnvironment.create(env)
 
     # 2. Create Source Table using DDL
-    # Use text format to read whole lines
+    # Use CSV with an unused delimiter to read whole lines
     # Path is now absolute inside the container, no 'file://' needed
     t_env.execute_sql(f"""
         CREATE TABLE hashtag_source (
@@ -53,14 +53,15 @@ if __name__ == "__main__":
         ) WITH (
             'connector' = 'filesystem',
             'path' = '{input_file_abs}',
-            'format' = 'text'
+            'format' = 'csv',
+            'csv.field-delimiter' = '|'
         )
     """)
 
     # 3. Define UDTF for extracting hashtags
     @udtf(result_types=[DataTypes.STRING()])
-    def extract_hashtags(row):
-        for word in row.line.lower().split():
+    def extract_hashtags(line):
+        for word in line.lower().split():
             if word.startswith('#'):
                 yield word
 
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     source_table = t_env.from_path('hashtag_source')
 
     result_table = source_table \
-        .flat_map(extract_hashtags(col('line')).alias('hashtag')) \
+        .flat_map(extract_hashtags(col('line'))).alias('hashtag') \
         .group_by(col('hashtag')) \
         .select(col('hashtag'), lit(1).count.alias('count')) # Use lit(1).count for counting
 
