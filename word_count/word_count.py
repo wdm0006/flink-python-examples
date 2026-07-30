@@ -14,7 +14,7 @@ if __name__ == "__main__":
     t_env = StreamTableEnvironment.create(env)
 
     # Define the input data
-    input_data = ["Who's there?", "I think I hear them. Stand, ho! Who's there?"]
+    input_data = [("Who's there?",), ("I think I hear them. Stand, ho! Who's there?",)]
 
     # 2. Create Source Table
     # Create a Table directly from the input data
@@ -23,13 +23,14 @@ if __name__ == "__main__":
 
     # 3. Define UDTF for splitting lines into words
     @udtf(result_types=[DataTypes.STRING()])
-    def split(row):
-        for word in row.line.lower().split():
+    def split(line):
+        for word in line.lower().split():
             yield word
 
     # 4. Define the Execution Logic (Word Count)
     result_table = source_table \
-        .flat_map(split(col('line')).alias('word')) \
+        .flat_map(split(col('line'))) \
+        .alias('word') \
         .group_by(col('word')) \
         .select(col('word'), col('word').count.alias('count'))
 
