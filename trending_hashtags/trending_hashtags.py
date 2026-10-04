@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     # Construct paths relative to the container mount point
     input_dir = os.path.join(base_path, 'trending_hashtags')
-    input_file_abs = os.path.join(input_dir, 'in.txt')
+    input_file_abs = os.path.join(input_dir, 'in.generated.txt')
 
     # Generate the input file *inside the container* where Flink can access it
     # This assumes the script itself is run from the container's context

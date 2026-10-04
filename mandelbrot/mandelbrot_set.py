@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     # Construct paths relative to the container mount point
     input_dir = os.path.join(base_path, 'mandelbrot')
-    input_file_abs = os.path.join(input_dir, 'in.txt')
+    input_file_abs = os.path.join(input_dir, 'in.generated.txt')
 
     # Generate the input file (adjust n for desired resolution/speed)
     # This happens when the script is executed by Flink

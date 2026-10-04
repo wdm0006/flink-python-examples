@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     # Construct paths relative to the container mount point
     input_dir = os.path.join(base_path, 'mean_values')
-    input_file_abs = os.path.join(input_dir, 'in.txt')
+    input_file_abs = os.path.join(input_dir, 'in.generated.txt')
 
     # Generate the input file *inside the container*
     generate_input_file(input_file_abs)
