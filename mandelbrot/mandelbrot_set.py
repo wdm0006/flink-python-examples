@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 from pyflink.datastream import StreamExecutionEnvironment
-from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings
+from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings, Row
 from pyflink.table.expressions import col
 from pyflink.table.udf import udf
 
@@ -12,7 +12,7 @@ def check_c(real_part, imag_part, rel_tol=1e-6, max_zmag=1e6, max_iter=500):
     """Checks whether or not c is in the Mandelbrot Set.
 
     Accepts real and imaginary parts as separate floats.
-    Returns a tuple (real, imag, magnitude) or None if not in the set or calculation fails.
+    Returns a Row (real, imag, magnitude) or None if not in the set or calculation fails.
     """
     try:
         c_complex = complex(float(real_part), float(imag_part))
@@ -30,12 +30,12 @@ def check_c(real_part, imag_part, rel_tol=1e-6, max_zmag=1e6, max_iter=500):
             if i > 1 and zmag[i] > 1e-12: # Avoid division by zero or near-zero
                 rel_diff = np.abs((zmag[i] - zmag[i-1]) / zmag[i])
                 if rel_diff < rel_tol:
-                    return (real_part, imag_part, float(zmag[i]))
+                    return Row(real_part, imag_part, float(zmag[i]))
             elif np.abs(zmag[i] - zmag[i-1]) < rel_tol * 1e-9: # Handle convergence near zero
-                 return (real_part, imag_part, float(zmag[i]))
+                 return Row(real_part, imag_part, float(zmag[i]))
 
         # If loop finishes without diverging or converging (unlikely with high max_iter)
-        return (real_part, imag_part, float(zmag[max_iter-1]))
+        return Row(real_part, imag_part, float(zmag[max_iter-1]))
 
     except Exception as e:
         # Log error or handle it appropriately
