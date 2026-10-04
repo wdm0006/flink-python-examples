@@ -8,34 +8,23 @@ from pyflink.table.udf import udf
 
 __author__ = 'willmcginnis/1oclockbuzz'
 
-def check_c(real_part, imag_part, rel_tol=1e-6, max_zmag=1e6, max_iter=500):
+def check_c(real_part, imag_part, max_iter=500):
     """Checks whether or not c is in the Mandelbrot Set.
 
     Accepts real and imaginary parts as separate floats.
-    Returns a Row (real, imag, magnitude) or None if not in the set or calculation fails.
+    Returns a Row (real, imag, magnitude) if the orbit of z = z**2 + c stays
+    within radius 2 for max_iter iterations, otherwise None (or None on failure).
     """
     try:
         c_complex = complex(float(real_part), float(imag_part))
-        z = np.zeros(max_iter, dtype=complex)
-        zmag = np.zeros(max_iter)
+        z = 0j
 
-        for i in range(1, max_iter):
-            z[i] = z[i-1]**2 + c_complex
-            zmag[i] = np.abs(z[i])
+        for _ in range(max_iter):
+            z = z * z + c_complex
+            if abs(z) > 2:
+                return None
 
-            if np.isnan(z[i]) or zmag[i] > max_zmag:
-                return None # Not in the set or diverged too quickly
-
-            # Check for convergence (close enough to previous magnitude)
-            if i > 1 and zmag[i] > 1e-12: # Avoid division by zero or near-zero
-                rel_diff = np.abs((zmag[i] - zmag[i-1]) / zmag[i])
-                if rel_diff < rel_tol:
-                    return Row(real_part, imag_part, float(zmag[i]))
-            elif np.abs(zmag[i] - zmag[i-1]) < rel_tol * 1e-9: # Handle convergence near zero
-                 return Row(real_part, imag_part, float(zmag[i]))
-
-        # If loop finishes without diverging or converging (unlikely with high max_iter)
-        return Row(real_part, imag_part, float(zmag[max_iter-1]))
+        return Row(real_part, imag_part, float(abs(z)))
 
     except Exception as e:
         # Log error or handle it appropriately
@@ -73,7 +62,7 @@ if __name__ == "__main__":
 
     # Construct paths relative to the container mount point
     input_dir = os.path.join(base_path, 'mandelbrot')
-    input_file_abs = os.path.join(input_dir, 'in.txt')
+    input_file_abs = os.path.join(input_dir, 'in.generated.txt')
 
     # Generate the input file (adjust n for desired resolution/speed)
     # This happens when the script is executed by Flink
