@@ -63,3 +63,6 @@ target/
 
 
 .idea/workspace.xml
+
+# Generated example inputs (committed in.txt files are format samples)
+*/in.generated.txt
