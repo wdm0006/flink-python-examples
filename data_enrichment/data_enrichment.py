@@ -1,7 +1,7 @@
 import os
 import json
 from pyflink.datastream import StreamExecutionEnvironment
-from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings
+from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings, Row
 from pyflink.table.expressions import col
 from pyflink.table.udf import udf
 
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         try:
             data = json.loads(json_str)
             # Handle potential missing keys gracefully
-            return (data.get('car', ''), data.get('attr', ''))
+            return Row(str(data.get('car', '')), str(data.get('attr', '')))
         except json.JSONDecodeError:
             # Handle lines that are not valid JSON
-            return (None, None)
+            return Row(None, None)
 
     # 4. Define the Execution Logic (Join and Format)
     input_table = t_env.from_path('input_source')

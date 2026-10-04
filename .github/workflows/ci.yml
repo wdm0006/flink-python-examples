@@ -61,6 +61,23 @@ jobs:
           make submit_mean_values | tee /tmp/mean-values.log
           grep -E '^\|[[:space:]]*\+I[[:space:]]*\|[[:space:]]*0\.[0-9]+[[:space:]]*\|[[:space:]]*0\.[0-9]+[[:space:]]*\|$' /tmp/mean-values.log
 
+      - name: Run data enrichment end to end
+        shell: bash
+        run: |
+          set -o pipefail
+          make submit_data_enrichment | tee /tmp/data-enrichment.log
+          for pair in dodge:red ford:green chevy:blue dodge:green; do
+            grep -E "^\|[[:space:]]*\+I[[:space:]]*\|[[:space:]]*${pair%%:*}[[:space:]]*\|[[:space:]]*${pair##*:}[[:space:]]*\|$" /tmp/data-enrichment.log
+          done
+          test "$(grep -c '^| +I' /tmp/data-enrichment.log)" -eq 4
+
+      - name: Run mandelbrot end to end
+        shell: bash
+        run: |
+          set -o pipefail
+          make submit_mandelbrot | tee /tmp/mandelbrot.log
+          grep -E '^\|[[:space:]]*\+I[[:space:]]*\|[[:space:]]*\(' /tmp/mandelbrot.log
+
       - name: Stop Flink
         if: always()
         run: make stop-flink

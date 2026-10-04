@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 from pyflink.datastream import StreamExecutionEnvironment
-from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings
+from pyflink.table import StreamTableEnvironment, DataTypes, EnvironmentSettings, Row
 from pyflink.table.expressions import col
 from pyflink.table.udf import udf
 
@@ -12,7 +12,7 @@ def check_c(real_part, imag_part, max_iter=500):
     """Checks whether or not c is in the Mandelbrot Set.
 
     Accepts real and imaginary parts as separate floats.
-    Returns a tuple (real, imag, magnitude) if the orbit of z = z**2 + c stays
+    Returns a Row (real, imag, magnitude) if the orbit of z = z**2 + c stays
     within radius 2 for max_iter iterations, otherwise None (or None on failure).
     """
     try:
@@ -24,7 +24,7 @@ def check_c(real_part, imag_part, max_iter=500):
             if abs(z) > 2:
                 return None
 
-        return (real_part, imag_part, float(abs(z)))
+        return Row(real_part, imag_part, float(abs(z)))
 
     except Exception as e:
         # Log error or handle it appropriately
