@@ -97,6 +97,7 @@ make stop-flink
 *   **Data Enrichment:** Reads sample JSON data and a CSV dimension table, joins them based on an attribute, and outputs the enriched data.
 *   **Mean Values:** Generates sample floating-point data and calculates the mean of each column.
 *   **Mandelbrot Set:** Generates candidate complex numbers and identifies points within the Mandelbrot set.
+*   **Streaming Windows:** Reads a bounded `datagen` stream with an event-time watermark and prints per-user tumbling-window counts and sums (`make submit_streaming_windows`).
 *   **Template Example:** A basic skeleton (`template_example/application.py`) demonstrating the structure for a new PyFlink Table API job.
 
 ## Cleaning Up

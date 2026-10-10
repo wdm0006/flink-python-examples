@@ -78,6 +78,14 @@ jobs:
           make submit_mandelbrot | tee /tmp/mandelbrot.log
           grep -E '^\|[[:space:]]*\+I[[:space:]]*\|[[:space:]]*\(' /tmp/mandelbrot.log
 
+      - name: Run streaming windows end to end
+        shell: bash
+        run: |
+          set -o pipefail
+          make submit_streaming_windows | tee /tmp/streaming-windows.log
+          grep -E 'window_start[[:space:]]*\|[[:space:]]*window_end' /tmp/streaming-windows.log
+          test "$(grep -c '^| +I' /tmp/streaming-windows.log)" -gt 0
+
       - name: Stop Flink
         if: always()
         run: make stop-flink
