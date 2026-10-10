@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: all setup run start-flink stop-flink clean submit_word_count submit_data_enrichment submit_trending_hashtags submit_mean_values submit_mandelbrot check_uv
+.PHONY: all setup run start-flink stop-flink clean submit_word_count submit_data_enrichment submit_trending_hashtags submit_mean_values submit_mandelbrot submit_streaming_windows check_uv
 
 # Variables
 VENV_DIR := .venv
@@ -71,6 +71,11 @@ submit_mandelbrot:
 	@echo "Submitting Mandelbrot Set example..."
 	@docker compose exec jobmanager flink run \
 		-py $(FLINK_APP_BASE_PATH)/mandelbrot/mandelbrot_set.py
+
+submit_streaming_windows:
+	@echo "Submitting Streaming Windows example..."
+	@docker compose exec jobmanager flink run \
+		-py $(FLINK_APP_BASE_PATH)/streaming_windows/streaming_windows.py
 
 # Run all examples by submitting them sequentially to the running cluster
 run: start-flink submit_mandelbrot submit_data_enrichment submit_word_count submit_trending_hashtags submit_mean_values
